@@ -10,7 +10,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [newRepoName, setNewRepoName] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedFiles] = useState([]);
 
 
 
@@ -125,25 +125,6 @@ console.log("Is Private:", isPrivate);
     };
     input.click();
   };
-
-  const pushRepo = async (repoName) => {
-    setMessage("Pushing to GitHub...");
-    try {
-      const response = await fetch("http://localhost:8080/push", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repoName, commitMessage: "Updated via GitHub Cloner" }),
-      });
-
-      const result = await response.json();
-      setMessage(result.message);
-    } catch (error) {
-      console.error("Push Error:", error);
-      setMessage("Error pushing repository.");
-    }
-  };
-
-
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-4">
