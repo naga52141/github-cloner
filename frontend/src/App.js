@@ -67,13 +67,10 @@ export default function App() {
     }
 };
 
-console.log("Selected Files:", selectedFiles);
-console.log("User:", user);
-console.log("Repositories:", repos);
-console.log("Loading:", loading);
-console.log("Message:", message);
-console.log("New Repository Name:", newRepoName);
-console.log("Is Private:", isPrivate);
+if (process.env.NODE_ENV === "development") {
+  console.log("User:", user);
+}
+
 
   // ✅ Create a New Repository
 
