@@ -126,11 +126,7 @@ console.log("Is Private:", isPrivate);
     input.click();
   };
 
-<<<<<<< HEAD
-=======
 
-
->>>>>>> 3ac458f (updated)
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-4">
       {/* ✅ GitHub OAuth Login Section */}
