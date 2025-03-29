@@ -10,7 +10,17 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
 
 
 const app = express();
-const PORT =  process.env.PORT || 4000;
+const PORT = process.env.PORT||4000;
+
+const allowedOrigins = [
+    "http://localhost:3000", 
+    "https://github-cloner-tz4k.vercel.app" // 🔹 Add deployed frontend URL
+];
+
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+}));
 
 app.use(express.json());
 app.use((req, res, next) => {
@@ -20,18 +30,13 @@ app.use((req, res, next) => {
 
 
 // 🔹 Session Setup
-const MongoStore = require("connect-mongo");
-app.use(session({
-    secret: process.env.SESSION_SECRET || "your_secret_key",
-    resave: false,
-    saveUninitialized: true,
-    store: MongoStore.create({
-        mongoUrl: process.env.MONGO_URI, // 🔹 Store sessions in MongoDB
-        ttl: 14 * 24 * 60 * 60, // 14 days
-    }),
-    cookie: { secure: true, sameSite: "none" }, // ✅ Required for cookies on HTTPS
-}));
-
+app.use(
+    session({
+        secret: "your_secret_key",
+        resave: false,
+        saveUninitialized: true,
+    })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 
