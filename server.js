@@ -174,42 +174,12 @@ app.post("/clone", (req, res) => {
     });
 });
 
-app.post("/push", (req, res) => {
-    const { repoName, commitMessage } = req.body;
-    if (!repoName) {
-        return res.status(400).json({ error: "Repository name is required." });
-    }
 
-    const repoPath = path.join(desktopPath, repoName);
-
-    // Run Git commands to commit and push
-    const gitCommands = `
-        cd "${repoPath}" &&
-        git add . &&
-        git commit -m "${commitMessage || "Updated via GitHub Cloner"}" &&
-        git push origin main
-    `;
-
-    exec(gitCommands, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Push error: ${stderr}`);
-            return res.status(500).json({ error: "Git push failed." });
-        }
-        res.json({ message: "Changes pushed successfully!", output: stdout });
-    });
-});
 
 
 
     // Run the commands
-    exec(gitCommands, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Push Error: ${stderr}`);
-            return res.status(500).json({ error: "Failed to push repository" });
-        }
-        console.log(`Repository pushed successfully: ${stdout}`);
-        res.json({ message: "Repository pushed successfully!" });
-    });
+   
 
 
 app.get("/repos/:username", async (req, res) => {
