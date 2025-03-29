@@ -5,12 +5,13 @@ const session = require("express-session");
 const passport = require("passport");
 const GitHubStrategy = require("passport-github2").Strategy;
 const axios = require("axios"); // ✅ Fix 1: Import axios
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
+
 
 
 const app = express();
 const PORT =  process.env.PORT || 4000;
 
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use((req, res, next) => {
     res.setHeader("Content-Security-Policy", "default-src *; font-src * data:;");
@@ -19,13 +20,18 @@ app.use((req, res, next) => {
 
 
 // 🔹 Session Setup
-app.use(
-    session({
-        secret: "your_secret_key",
-        resave: false,
-        saveUninitialized: true,
-    })
-);
+const MongoStore = require("connect-mongo");
+app.use(session({
+    secret: process.env.SESSION_SECRET || "your_secret_key",
+    resave: false,
+    saveUninitialized: true,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI, // 🔹 Store sessions in MongoDB
+        ttl: 14 * 24 * 60 * 60, // 14 days
+    }),
+    cookie: { secure: true, sameSite: "none" }, // ✅ Required for cookies on HTTPS
+}));
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -35,7 +41,7 @@ passport.use(
         {
             clientID: process.env.GITHUB_CLIENT_ID,
             clientSecret: process.env.GITHUB_CLIENT_SECRET,
-            callbackURL: "http://localhost:4000/auth/github/callback",
+            callbackURL: "process.env.GITHUB_CALLBACK_URL"
         },
         (accessToken, refreshToken, profile, done) => {
             return done(null, { profile, accessToken });
@@ -59,15 +65,16 @@ app.get("/auth/github", passport.authenticate("github", { scope: ["repo", "user"
 app.get(
     "/auth/github/callback",
     passport.authenticate("github", {
-        failureRedirect: "http://localhost:3000/login",
+        failureRedirect: `${process.env.FRONTEND_URL}/login`,
+
     }),
     (req, res) => {
-        res.redirect("http://localhost:3000/dashboard");
+        res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
     }
 );
 
 // 🔹 Get Logged-In User Info
-app.get("/user", (req, res) => {
+app.get(`${BACKEND_URL}/user`, (req, res) => {
     if (req.isAuthenticated()) {
         res.json(req.user);
     } else {
@@ -82,7 +89,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 const fs = require("fs");
 const path = require("path");
 
-app.post("/upload-files", upload.array("files"), async (req, res) => {
+app.post(`${BACKEND_URL}/upload-files`, upload.array("files"), async (req, res) => {
     if (!req.user) {
         return res.status(401).json({ error: "Unauthorized" });
     }
@@ -118,7 +125,7 @@ app.post("/upload-files", upload.array("files"), async (req, res) => {
 
 
 // 🔹 Create a New Repository on GitHub
-app.post("/create-repo", async (req, res) => {
+app.post(`${BACKEND_URL}/create-repo`, async (req, res) => {
     console.log("User Data:", req.user); // 🔍 Debugging line
 
     if (!req.user) {
@@ -196,7 +203,7 @@ app.get("/repos/:username", async (req, res) => {
 // 🔹 Logout
 app.get("/logout", (req, res) => {
     req.logout(() => {
-        res.redirect("http://localhost:3000/");
+        res.redirect(`${process.env.FRONTEND_URL}/`);
     });
 });
 app.get("/", (req, res) => {

@@ -18,10 +18,11 @@ export default function App() {
   // ✅ Fetch GitHub User Info (OAuth)
   useEffect(() => {
     axios
-      .get("http://localhost:4000/user", { withCredentials: true })
+      .get(`${process.env.REACT_APP_BACKEND_URL}/user`, { withCredentials: true })
       .then((response) => setUser(response.data))
       .catch(() => setUser(null));
-  }, []);
+}, []);
+
 
 
   // ✅ Fetch Repositories
@@ -30,42 +31,42 @@ export default function App() {
     setMessage("");
 
     try {
-      const response = await fetch(`http://localhost:4000/repos/${username}`);
-      console.log("Response Status:", response.status); // Log status
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/repos/${username}`);
+      console.log("Response Status:", response.status);
 
-      const text = await response.text(); // Read raw response
-      console.log("Raw Response:", text); // Debugging
+      const text = await response.text();
+      console.log("Raw Response:", text);
 
-      // Try parsing as JSON
       const data = JSON.parse(text);
       if (data.error) throw new Error(data.error);
 
       setRepos(data);
     } catch (error) {
-      console.error("Fetch Error:", error); // Debugging
+      console.error("Fetch Error:", error);
       setMessage("Error fetching repositories.");
     }
 
     setLoading(false);
-  };
+};
 
   // ✅ Clone Repository
-const cloneRepo = async (repo) => {
-  setMessage("Cloning...");
-  try {
-    const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/clone`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ repoUrl: repo.clone_url, repoName: repo.name }),
-    });
+  const cloneRepo = async (repo) => {
+    setMessage("Cloning...");
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/clone`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repoUrl: repo.clone_url, repoName: repo.name }),
+      });
 
-    const result = await response.json();
-    setMessage(result.message);
-  } catch (error) {
-    console.error("Clone Error:", error);
-    setMessage("Error cloning repository.");
-  }
+      const result = await response.json();
+      setMessage(result.message);
+    } catch (error) {
+      console.error("Clone Error:", error);
+      setMessage("Error cloning repository.");
+    }
 };
+
 console.log("Selected Files:", selectedFiles);
 console.log("User:", user);
 console.log("Repositories:", repos);
@@ -84,7 +85,7 @@ console.log("Is Private:", isPrivate);
 
     try {
       const response = await axios.post(
-        "http://localhost:4000/create-repo",
+        `${process.env.REACT_APP_BACKEND_URL}/create-repo`,
         { repoName: newRepoName, isPrivate },
         { withCredentials: true }
       );
@@ -94,37 +95,38 @@ console.log("Is Private:", isPrivate);
     } catch (error) {
       setMessage(error.response?.data?.error || "Failed to create repository");
     }
+};
+
+
+const handleFileUpload = (repoName) => {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.multiple = true;
+  input.onchange = async (event) => {
+    const files = event.target.files;
+    if (files.length === 0) return;
+
+    const formData = new FormData();
+    formData.append("repoName", repoName);
+    for (let file of files) {
+      formData.append("files", file);
+    }
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/upload-files`,
+        formData,
+        { withCredentials: true }
+      );
+
+      setMessage(response.data.message);
+    } catch (error) {
+      setMessage(error.response?.data?.error || "Failed to upload files");
+    }
   };
+  input.click();
+};
 
-
-  const handleFileUpload = (repoName) => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.multiple = true; // Allow multiple file selection
-    input.onchange = async (event) => {
-      const files = event.target.files;
-      if (files.length === 0) return;
-
-      const formData = new FormData();
-      formData.append("repoName", repoName);
-      for (let file of files) {
-        formData.append("files", file);
-      }
-
-      try {
-        const response = await axios.post(
-          "http://localhost:4000/upload-files",
-          formData,
-          { withCredentials: true }
-        );
-
-        setMessage(response.data.message);
-      } catch (error) {
-        setMessage(error.response?.data?.error || "Failed to upload files");
-      }
-    };
-    input.click();
-  };
 
 
   return (
