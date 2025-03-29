@@ -5,23 +5,12 @@ const session = require("express-session");
 const passport = require("passport");
 const GitHubStrategy = require("passport-github2").Strategy;
 const axios = require("axios"); // ✅ Fix 1: Import axios
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
-
 
 
 const app = express();
-const PORT = process.env.PORT||4000;
+const PORT = 4000;
 
-const allowedOrigins = [
-    "http://localhost:3000", 
-    "https://github-cloner-tz4k.vercel.app" // 🔹 Add deployed frontend URL
-];
-
-app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
-}));
-
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use((req, res, next) => {
     res.setHeader("Content-Security-Policy", "default-src *; font-src * data:;");
@@ -46,7 +35,7 @@ passport.use(
         {
             clientID: process.env.GITHUB_CLIENT_ID,
             clientSecret: process.env.GITHUB_CLIENT_SECRET,
-            callbackURL: "process.env.GITHUB_CALLBACK_URL"
+            callbackURL: "http://localhost:4000/auth/github/callback",
         },
         (accessToken, refreshToken, profile, done) => {
             return done(null, { profile, accessToken });
@@ -70,16 +59,15 @@ app.get("/auth/github", passport.authenticate("github", { scope: ["repo", "user"
 app.get(
     "/auth/github/callback",
     passport.authenticate("github", {
-        failureRedirect: `${process.env.FRONTEND_URL}/login`,
-
+        failureRedirect: "http://localhost:3000/login",
     }),
     (req, res) => {
-        res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
+        res.redirect("http://localhost:3000/dashboard");
     }
 );
 
 // 🔹 Get Logged-In User Info
-app.get(`${BACKEND_URL}/user`, (req, res) => {
+app.get("/user", (req, res) => {
     if (req.isAuthenticated()) {
         res.json(req.user);
     } else {
@@ -94,7 +82,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 const fs = require("fs");
 const path = require("path");
 
-app.post(`${BACKEND_URL}/upload-files`, upload.array("files"), async (req, res) => {
+app.post("/upload-files", upload.array("files"), async (req, res) => {
     if (!req.user) {
         return res.status(401).json({ error: "Unauthorized" });
     }
@@ -130,7 +118,7 @@ app.post(`${BACKEND_URL}/upload-files`, upload.array("files"), async (req, res) 
 
 
 // 🔹 Create a New Repository on GitHub
-app.post(`${BACKEND_URL}/create-repo`, async (req, res) => {
+app.post("/create-repo", async (req, res) => {
     console.log("User Data:", req.user); // 🔍 Debugging line
 
     if (!req.user) {
@@ -208,7 +196,7 @@ app.get("/repos/:username", async (req, res) => {
 // 🔹 Logout
 app.get("/logout", (req, res) => {
     req.logout(() => {
-        res.redirect(`${process.env.FRONTEND_URL}/`);
+        res.redirect("http://localhost:3000/");
     });
 });
 app.get("/", (req, res) => {
