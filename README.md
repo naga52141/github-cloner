@@ -95,9 +95,11 @@ npm start
 ---  
 
 ## 💡 Screenshots  
-![GitHub Login](https://via.placeholder.com/800x400?text=GitHub+Login+Screen)  
-![Repo Search](https://via.placeholder.com/800x400?text=Repository+Search)  
-![Clone Repository](https://via.placeholder.com/800x400?text=Clone+Repository)  
+<img width="1470" alt="Screenshot 2025-03-29 at 2 24 34 PM" src="https://github.com/user-attachments/assets/66c54f7b-09a4-42ad-a1a9-d9e2a0069e08" />
+<img width="1470" alt="Screenshot 2025-03-29 at 2 24 59 PM" src="https://github.com/user-attachments/assets/a9ae70e0-856c-4ced-a6a0-a8d4df575c73" />
+<img width="1470" alt="Screenshot 2025-03-29 at 2 27 19 PM" src="https://github.com/user-attachments/assets/f18126fd-78b3-4991-8c76-cacd433c8622" />
+
+
 
 ---  
 
