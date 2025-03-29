@@ -8,7 +8,7 @@ const axios = require("axios"); // ✅ Fix 1: Import axios
 
 
 const app = express();
-const PORT = 4000;
+const PORT =  process.env.PORT || 4000;
 
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
